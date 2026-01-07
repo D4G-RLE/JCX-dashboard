@@ -7,7 +7,7 @@ import pandas as pd
 # Données des projets
 from app.data_loader import load_projects_data
 # Charger les vraies données (pour github changer en real=False)
-projects_data = load_projects_data(real=True)
+projects_data = load_projects_data(real=False)
 
 CO2_GAS = 0.18316
 
