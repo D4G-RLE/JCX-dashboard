@@ -1,0 +1,23 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# MacOS specific
+.DS_Store
+
+# Data files
+app/projects_data.py    # ton vrai fichier de données → ne jamais mettre sur GitHub
+data/*                  # si tu as un dossier data pour d'autres fichiers
+!data/README.md
+!data/.gitkeep
+
+# IDE / Editor files
+.vscode/
+*.idea/
+
