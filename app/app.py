@@ -7,7 +7,7 @@ import pandas as pd
 # Données des projets
 from app.data_loader import load_projects_data
 # Charger les vraies données (pour github changer en real=False)
-projects_data = load_projects_data(real=False)
+projects_data = load_projects_data(real=True)
 
 CO2_GAS = 0.18316
 
@@ -61,95 +61,274 @@ def calculate_co2(project, year, ref_level, timeline):
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
+    # Header
     html.H1("Projet de Rénovation Énergétique JCX", 
-            style={'textAlign': 'center', 'color': '#1f2937', 'marginBottom': '30px'}),
+            style={
+                'textAlign': 'center', 
+                'color': '#1f2937', 
+                'marginBottom': '40px',
+                'fontSize': '36px',
+                'fontWeight': 'bold'
+            }),
     
-    # Contrôles pour ajouter une mesure
+    # Section graphique avec checkboxes
     html.Div([
-        html.Div([
-            html.Label("Année d'exécution:", style={'fontWeight': 'bold'}),
-            dcc.Input(id='year-input', type='number', value=2025, min=2025, max=2050,
-                     style={'width': '100%', 'padding': '8px', 'fontSize': '16px'}),
-        ], style={'width': '30%', 'display': 'inline-block', 'marginRight': '3%'}),
+        html.H2("Évolution CO2e/m² et CAPEX annuel", 
+                style={
+                    'fontSize': '24px', 
+                    'fontWeight': '600', 
+                    'marginBottom': '20px',
+                    'color': '#374151'
+                }),
         
+        # Checkboxes pour les projets
         html.Div([
-            html.Label("Projet:", style={'fontWeight': 'bold'}),
-            dcc.Dropdown(
-                id='project-dropdown',
-                options=[{'label': p, 'value': p} for p in projects_data.keys()],
-                value=list(projects_data.keys())[0],
-                style={'fontSize': '16px'}
+            dcc.Checklist(
+                id='project-visibility',
+                options=[{'label': f'  {p}', 'value': p} for p in projects_data.keys()],
+                value=list(projects_data.keys()),
+                inline=True,
+                style={'fontSize': '15px', 'color': '#4b5563'}
             ),
-        ], style={'width': '30%', 'display': 'inline-block', 'marginRight': '3%'}),
+        ], style={'marginBottom': '20px'}),
         
-        html.Div([
-            html.Label("Mesure:", style={'fontWeight': 'bold'}),
-            dcc.Dropdown(
-                id='measure-dropdown',
-                options=[
-                    {'label': 'Groupe de mesures 1 : Quick wins', 'value': 1},
-                    {'label': 'Groupe de mesures 2 : Isolation', 'value': 2},
-                    {'label': 'Groupe de mesures 3 : Ventilation + PAC', 'value': 3}
-                ],
-                value=1,
-                style={'fontSize': '16px'}
-            ),
-        ], style={'width': '30%', 'display': 'inline-block'}),
-    ], style={'padding': '20px', 'backgroundColor': '#f9fafb', 'borderRadius': '10px', 'marginBottom': '20px'}),
-    
-    html.Div([
-        html.Button('Ajouter la mesure', id='add-button', n_clicks=0,
-                   style={'backgroundColor': '#3b82f6', 'color': 'white', 'padding': '10px 20px',
-                          'fontSize': '16px', 'border': 'none', 'borderRadius': '5px', 'cursor': 'pointer',
-                          'marginRight': '10px'}),
-        html.Button('Réinitialiser', id='reset-button', n_clicks=0,
-                   style={'backgroundColor': '#ef4444', 'color': 'white', 'padding': '10px 20px',
-                          'fontSize': '16px', 'border': 'none', 'borderRadius': '5px', 'cursor': 'pointer'}),
-    ], style={'marginBottom': '20px'}),
-    
-    # Stats boxes
-    html.Div([
-        html.Div([
-            html.H3("CO2 ÉCONOMISÉ (2024-2050)", style={'fontSize': '14px', 'marginBottom': '10px'}),
-            html.H2(id='co2-saved', style={'fontSize': '48px', 'fontWeight': 'bold', 'marginBottom': '10px'}),
-            html.P("tonnes CO2e", style={'fontSize': '20px', 'marginBottom': '15px'}),
-            html.Hr(style={'borderColor': 'rgba(255,255,255,0.3)'}),
-            html.Div(id='co2-equivalents', style={'fontSize': '14px'})
-        ], style={'width': '48%', 'display': 'inline-block', 'backgroundColor': '#10b981',
-                  'color': 'white', 'padding': '30px', 'borderRadius': '15px', 'marginRight': '4%'}),
+        # Graphique
+        dcc.Graph(id='main-graph', style={'height': '600px'}),
         
-        html.Div([
-            html.H3("INVESTISSEMENT TOTAL", style={'fontSize': '14px', 'marginBottom': '10px'}),
-            html.H2(id='investment-total', style={'fontSize': '48px', 'fontWeight': 'bold', 'marginBottom': '10px'}),
-            html.P(id='investment-detail', style={'fontSize': '20px'})
-        ], style={'width': '48%', 'display': 'inline-block', 'backgroundColor': '#3b82f6',
-                  'color': 'white', 'padding': '30px', 'borderRadius': '15px'}),
-    ], style={'marginBottom': '30px'}),
+    ], style={
+        'backgroundColor': 'white', 
+        'padding': '30px', 
+        'borderRadius': '12px', 
+        'marginBottom': '30px',
+        'boxShadow': '0 1px 3px rgba(0,0,0,0.1)'
+    }),
     
-    # Checkboxes pour les projets
+    # Stats boxes (côte à côte avec flex)
     html.Div([
-        dcc.Checklist(
-            id='project-visibility',
-            options=[{'label': p, 'value': p} for p in projects_data.keys()],
-            value=list(projects_data.keys()),
-            inline=True,
-            style={'fontSize': '14px'}
-        ),
-    ], style={'marginBottom': '20px'}),
+        # CO2 économisé
+        html.Div([
+            html.H3("CO2 ÉCONOMISÉ (2024-2050)", 
+                    style={
+                        'fontSize': '14px', 
+                        'marginBottom': '12px',
+                        'fontWeight': '600',
+                        'letterSpacing': '0.5px',
+                        'opacity': '0.95'
+                    }),
+            html.H2(id='co2-saved', 
+                    style={
+                        'fontSize': '56px', 
+                        'fontWeight': 'bold', 
+                        'marginBottom': '8px',
+                        'lineHeight': '1'
+                    }),
+            html.P("tonnes CO2e", 
+                   style={
+                       'fontSize': '20px', 
+                       'marginBottom': '20px',
+                       'fontWeight': '500'
+                   }),
+            html.Hr(style={
+                'borderColor': 'rgba(255,255,255,0.3)',
+                'margin': '20px 0'
+            }),
+            html.Div(id='co2-equivalents', 
+                     style={
+                         'fontSize': '14px',
+                         'lineHeight': '1.8'
+                     })
+        ], style={
+            'flex': '1',
+            'backgroundColor': '#10b981',
+            'color': 'white', 
+            'padding': '35px', 
+            'borderRadius': '12px',
+            'boxShadow': '0 4px 6px rgba(0,0,0,0.1)'
+        }),
+        
+        # Investissement total
+        html.Div([
+            html.H3("INVESTISSEMENT TOTAL", 
+                    style={
+                        'fontSize': '14px', 
+                        'marginBottom': '12px',
+                        'fontWeight': '600',
+                        'letterSpacing': '0.5px',
+                        'opacity': '0.95'
+                    }),
+            html.H2(id='investment-total', 
+                    style={
+                        'fontSize': '56px', 
+                        'fontWeight': 'bold', 
+                        'marginBottom': '8px',
+                        'lineHeight': '1'
+                    }),
+            html.P(id='investment-detail', 
+                   style={
+                       'fontSize': '20px',
+                       'fontWeight': '500'
+                   })
+        ], style={
+            'flex': '1',
+            'backgroundColor': '#3b82f6',
+            'color': 'white', 
+            'padding': '35px', 
+            'borderRadius': '12px',
+            'boxShadow': '0 4px 6px rgba(0,0,0,0.1)'
+        }),
+        
+    ], style={
+        'display': 'flex',
+        'gap': '25px',
+        'marginBottom': '30px'
+    }),
     
-    # Graphique
-    dcc.Graph(id='main-graph', style={'height': '600px'}),
+    # Section planification des mesures
+    html.Div([
+        html.H2("Planifier une mesure", 
+                style={
+                    'fontSize': '24px', 
+                    'fontWeight': '600', 
+                    'marginBottom': '25px',
+                    'color': '#374151'
+                }),
+        
+        # Contrôles pour ajouter une mesure
+        html.Div([
+            html.Div([
+                html.Label("Année d'exécution:", 
+                          style={
+                              'fontWeight': '600', 
+                              'marginBottom': '8px',
+                              'display': 'block',
+                              'color': '#374151'
+                          }),
+                dcc.Input(
+                    id='year-input', 
+                    type='number', 
+                    value=2025, 
+                    min=2025, 
+                    max=2050,
+                    style={
+                        'width': '100%', 
+                        'padding': '10px', 
+                        'fontSize': '16px',
+                        'border': '2px solid #e5e7eb',
+                        'borderRadius': '8px'
+                    }
+                ),
+            ], style={'flex': '1'}),
+            
+            html.Div([
+                html.Label("Projet:", 
+                          style={
+                              'fontWeight': '600', 
+                              'marginBottom': '8px',
+                              'display': 'block',
+                              'color': '#374151'
+                          }),
+                dcc.Dropdown(
+                    id='project-dropdown',
+                    options=[{'label': p, 'value': p} for p in projects_data.keys()],
+                    value=list(projects_data.keys())[0],
+                    style={'fontSize': '16px'}
+                ),
+            ], style={'flex': '1'}),
+            
+            html.Div([
+                html.Label("Mesure:", 
+                          style={
+                              'fontWeight': '600', 
+                              'marginBottom': '8px',
+                              'display': 'block',
+                              'color': '#374151'
+                          }),
+                dcc.Dropdown(
+                    id='measure-dropdown',
+                    options=[
+                        {'label': 'Groupe de mesures 1 : Quick wins', 'value': 1},
+                        {'label': 'Groupe de mesures 2 : Isolation', 'value': 2},
+                        {'label': 'Groupe de mesures 3 : Ventilation + PAC', 'value': 3}
+                    ],
+                    value=1,
+                    style={'fontSize': '16px'}
+                ),
+            ], style={'flex': '1'}),
+        ], style={
+            'display': 'flex',
+            'gap': '20px',
+            'marginBottom': '25px'
+        }),
+        
+        # Boutons
+        html.Div([
+            html.Button('Ajouter la mesure', 
+                       id='add-button', 
+                       n_clicks=0,
+                       style={
+                           'backgroundColor': '#3b82f6', 
+                           'color': 'white', 
+                           'padding': '12px 24px',
+                           'fontSize': '16px', 
+                           'border': 'none', 
+                           'borderRadius': '8px', 
+                           'cursor': 'pointer',
+                           'fontWeight': '600',
+                           'marginRight': '12px',
+                           'boxShadow': '0 2px 4px rgba(0,0,0,0.1)'
+                       }),
+            html.Button('Réinitialiser', 
+                       id='reset-button', 
+                       n_clicks=0,
+                       style={
+                           'backgroundColor': '#ef4444', 
+                           'color': 'white', 
+                           'padding': '12px 24px',
+                           'fontSize': '16px', 
+                           'border': 'none', 
+                           'borderRadius': '8px', 
+                           'cursor': 'pointer',
+                           'fontWeight': '600',
+                           'boxShadow': '0 2px 4px rgba(0,0,0,0.1)'
+                       }),
+        ]),
+        
+    ], style={
+        'backgroundColor': 'white', 
+        'padding': '30px', 
+        'borderRadius': '12px', 
+        'marginBottom': '30px',
+        'boxShadow': '0 1px 3px rgba(0,0,0,0.1)'
+    }),
     
     # Planning des mesures
     html.Div([
-        html.H3("Planning des mesures", style={'marginBottom': '15px'}),
+        html.H2("Planning des mesures", 
+                style={
+                    'fontSize': '24px', 
+                    'fontWeight': '600', 
+                    'marginBottom': '20px',
+                    'color': '#374151'
+                }),
         html.Div(id='timeline-display')
-    ], style={'backgroundColor': 'white', 'padding': '20px', 'borderRadius': '10px', 'marginTop': '20px'}),
+    ], style={
+        'backgroundColor': 'white', 
+        'padding': '30px', 
+        'borderRadius': '12px',
+        'boxShadow': '0 1px 3px rgba(0,0,0,0.1)'
+    }),
     
     # Store pour le timeline
     dcc.Store(id='timeline-store', data=[]),
     dcc.Store(id='alert-trigger', data=0)
-], style={'maxWidth': '1400px', 'margin': '0 auto', 'padding': '40px', 'backgroundColor': '#f3f4f6'})
+    
+], style={
+    'maxWidth': '1400px', 
+    'margin': '0 auto', 
+    'padding': '40px 20px', 
+    'backgroundColor': '#f3f4f6',
+    'minHeight': '100vh'
+})
 
 @app.callback(
     [Output('timeline-store', 'data'),
@@ -255,10 +434,21 @@ def update_graph(timeline, visible_projects):
                 secondary_y=False
             )
     
-    fig.update_xaxes(title_text="Année")
-    fig.update_yaxes(title_text="kg CO2e/m²", secondary_y=False)
-    fig.update_yaxes(title_text="CAPEX (€)", secondary_y=True)
-    fig.update_layout(height=600, hovermode='x unified', template='plotly_white')
+    fig.update_xaxes(title_text="Année", title_font=dict(size=14))
+    fig.update_yaxes(title_text="kg CO2e/m²", secondary_y=False, title_font=dict(size=14))
+    fig.update_yaxes(title_text="CAPEX (€)", secondary_y=True, title_font=dict(size=14))
+    fig.update_layout(
+        height=600, 
+        hovermode='x unified', 
+        template='plotly_white',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
     
     # Calculs stats
     total_investment = sum(projects_data[a['project']][f"costRef{a['ref']}"] for a in timeline)
@@ -277,8 +467,10 @@ def update_graph(timeline, visible_projects):
     
     # Équivalents CO2
     equivalents = html.Div([
-        html.Div(f"📱 {int(co2_saved * 1000 / 200):,} ordinateurs portables".replace(',', ' ')),
-        html.Div(f"✈️ {int(co2_saved * 1000 / 1100):,} vols Paris-NYC (AR)".replace(',', ' ')),
+        html.Div(f"📱 {int(co2_saved * 1000 / 200):,} ordinateurs portables".replace(',', ' '), 
+                 style={'marginBottom': '8px'}),
+        html.Div(f"✈️ {int(co2_saved * 1000 / 1100):,} vols Paris-NYC (AR)".replace(',', ' '), 
+                 style={'marginBottom': '8px'}),
         html.Div(f"👤 {int(co2_saved * 1000 / 13400):,} Belges pendant 1 an".replace(',', ' '))
     ])
     
@@ -290,14 +482,48 @@ def update_graph(timeline, visible_projects):
         cost = projects_data[item['project']][f"costRef{item['ref']}"]
         timeline_items.append(
             html.Div([
-                html.Span(f"{item['year']}", style={'fontWeight': 'bold', 'color': '#3b82f6', 'marginRight': '20px'}),
-                html.Span(f"{item['project']} - {ref_names[item['ref']]}", style={'marginRight': '20px'}),
-                html.Span(f"{cost:,.0f} €".replace(',', ' '), style={'color': '#10b981', 'fontWeight': 'bold'})
-            ], style={'padding': '12px', 'backgroundColor': '#f9fafb', 'marginBottom': '8px',
-                     'borderRadius': '8px', 'border': '2px solid #e5e7eb'})
+                html.Span(f"{item['year']}", 
+                         style={
+                             'fontWeight': 'bold', 
+                             'color': '#3b82f6', 
+                             'marginRight': '20px',
+                             'fontSize': '16px',
+                             'minWidth': '60px',
+                             'display': 'inline-block'
+                         }),
+                html.Span(f"{item['project']} - {ref_names[item['ref']]}", 
+                         style={
+                             'marginRight': '20px',
+                             'flex': '1',
+                             'color': '#374151'
+                         }),
+                html.Span(f"{cost:,.0f} €".replace(',', ' '), 
+                         style={
+                             'color': '#10b981', 
+                             'fontWeight': 'bold',
+                             'fontSize': '16px'
+                         })
+            ], style={
+                'padding': '15px 20px', 
+                'backgroundColor': '#f9fafb', 
+                'marginBottom': '10px',
+                'borderRadius': '8px', 
+                'border': '1px solid #e5e7eb',
+                'display': 'flex',
+                'alignItems': 'center',
+                'transition': 'all 0.2s'
+            })
         )
     
-    timeline_display = timeline_items if timeline_items else html.P("Aucune mesure planifiée", style={'fontStyle': 'italic', 'color': '#6b7280'})
+    timeline_display = timeline_items if timeline_items else html.P(
+        "Aucune mesure planifiée", 
+        style={
+            'fontStyle': 'italic', 
+            'color': '#9ca3af',
+            'textAlign': 'center',
+            'padding': '20px'
+        }
+    )
     
     return fig, f"{co2_saved:.1f}", equivalents, inv_display, inv_detail, timeline_display
 
