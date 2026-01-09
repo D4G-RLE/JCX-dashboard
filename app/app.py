@@ -65,7 +65,7 @@ app.layout = html.Div([
     html.H1("Projet de Rénovation Énergétique JCX", 
             style={
                 'textAlign': 'center', 
-                'color': '#1f2937', 
+                'color': '#004955', 
                 'marginBottom': '40px',
                 'fontSize': '36px',
                 'fontWeight': 'bold'
@@ -78,7 +78,7 @@ app.layout = html.Div([
                     'fontSize': '24px', 
                     'fontWeight': '600', 
                     'marginBottom': '20px',
-                    'color': '#374151'
+                    'color': '#004955'
                 }),
         
         # Checkboxes pour les projets
@@ -139,7 +139,7 @@ app.layout = html.Div([
                      })
         ], style={
             'flex': '1',
-            'backgroundColor': '#10b981',
+            'backgroundColor': '#4FBF9F',
             'color': 'white', 
             'padding': '35px', 
             'borderRadius': '12px',
@@ -170,7 +170,7 @@ app.layout = html.Div([
                    })
         ], style={
             'flex': '1',
-            'backgroundColor': '#3b82f6',
+            'backgroundColor': '#5FA5B1',
             'color': 'white', 
             'padding': '35px', 
             'borderRadius': '12px',
@@ -190,7 +190,7 @@ app.layout = html.Div([
                     'fontSize': '24px', 
                     'fontWeight': '600', 
                     'marginBottom': '25px',
-                    'color': '#374151'
+                    'color': '#004955'
                 }),
         
         # Contrôles pour ajouter une mesure
@@ -201,7 +201,7 @@ app.layout = html.Div([
                               'fontWeight': '600', 
                               'marginBottom': '8px',
                               'display': 'block',
-                              'color': '#374151'
+                              'color': '#004955'
                           }),
                 dcc.Input(
                     id='year-input', 
@@ -211,7 +211,7 @@ app.layout = html.Div([
                     max=2050,
                     style={
                         'width': '100%', 
-                        'padding': '10px', 
+                        'padding': '9px', 
                         'fontSize': '16px',
                         'border': '2px solid #e5e7eb',
                         'borderRadius': '8px'
@@ -225,7 +225,7 @@ app.layout = html.Div([
                               'fontWeight': '600', 
                               'marginBottom': '8px',
                               'display': 'block',
-                              'color': '#374151'
+                              'color': '#004955'
                           }),
                 dcc.Dropdown(
                     id='project-dropdown',
@@ -241,7 +241,7 @@ app.layout = html.Div([
                               'fontWeight': '600', 
                               'marginBottom': '8px',
                               'display': 'block',
-                              'color': '#374151'
+                              'color': '#004955'
                           }),
                 dcc.Dropdown(
                     id='measure-dropdown',
@@ -266,7 +266,7 @@ app.layout = html.Div([
                        id='add-button', 
                        n_clicks=0,
                        style={
-                           'backgroundColor': '#3b82f6', 
+                           'backgroundColor': '#004955', 
                            'color': 'white', 
                            'padding': '12px 24px',
                            'fontSize': '16px', 
@@ -281,7 +281,7 @@ app.layout = html.Div([
                        id='reset-button', 
                        n_clicks=0,
                        style={
-                           'backgroundColor': '#ef4444', 
+                           'backgroundColor': '#FAC53A', 
                            'color': 'white', 
                            'padding': '12px 24px',
                            'fontSize': '16px', 
@@ -308,7 +308,7 @@ app.layout = html.Div([
                     'fontSize': '24px', 
                     'fontWeight': '600', 
                     'marginBottom': '20px',
-                    'color': '#374151'
+                    'color': '#004955'
                 }),
         html.Div(id='timeline-display')
     ], style={
@@ -467,11 +467,12 @@ def update_graph(timeline, visible_projects):
     
     # Équivalents CO2
     equivalents = html.Div([
-        html.Div(f"📱 {int(co2_saved * 1000 / 200):,} ordinateurs portables".replace(',', ' '), 
+        html.Div(f"📱 {int(co2_saved * 1000 / 200):,} Ordinateurs portables".replace(',', ' '), 
                  style={'marginBottom': '8px'}),
-        html.Div(f"✈️ {int(co2_saved * 1000 / 1100):,} vols Paris-NYC (AR)".replace(',', ' '), 
+        html.Div(f"✈️ {int(co2_saved * 1000 / 479):,} Vols Bruxelles-Marseille (AR)".replace(',', ' '), 
                  style={'marginBottom': '8px'}),
-        html.Div(f"👤 {int(co2_saved * 1000 / 13400):,} Belges pendant 1 an".replace(',', ' '))
+        html.Div(f"👤 {int(co2_saved * 1000 / 13400):,} Employés de JCX pendant 1 an".replace(',', ' '),
+                 style={'marginBottom': '8px'}),
     ])
     
     # Timeline display
@@ -505,7 +506,7 @@ def update_graph(timeline, visible_projects):
                          })
             ], style={
                 'padding': '15px 20px', 
-                'backgroundColor': '#f9fafb', 
+                'backgroundColor': "#3686d6", 
                 'marginBottom': '10px',
                 'borderRadius': '8px', 
                 'border': '1px solid #e5e7eb',
